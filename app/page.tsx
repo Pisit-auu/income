@@ -55,12 +55,14 @@ export default function ExpenseTracker() {
   const generatePDF = () => {
     if (typeof window !== 'undefined') {
       const input = document.getElementById('pdf-content');
-      html2canvas(input).then((canvas) => {
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        pdf.addImage(imgData, 'PNG', 10, 10, 190, 0);
-        pdf.save('รายรับรายจ่าย.pdf');
-      });
+      if (input) {  // ตรวจสอบว่า input ไม่เป็น null
+        html2canvas(input).then((canvas) => {
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          pdf.addImage(imgData, 'PNG', 10, 10, 190, 0);
+          pdf.save('รายรับรายจ่าย.pdf');
+        });
+      }
     }
   };
 
