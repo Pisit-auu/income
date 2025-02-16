@@ -4,7 +4,13 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
 export default function ExpenseTracker() {
-  const [transactions, setTransactions] = useState([]);
+  type Transaction = {
+    date: string;
+    item: string;
+    expense: number;
+  };
+  
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [date, setDate] = useState("");
   const [item, setItem] = useState("");
   const [expense, setExpense] = useState("");
@@ -21,11 +27,12 @@ export default function ExpenseTracker() {
   }, [transactions]);
 
   const addTransaction = () => {
-    const newTransaction = {
-      date,
-      item,
+    const newTransaction: Transaction = {
+      date: date,
+      item: item,
       expense: parseFloat(expense) || 0,
     };
+    
     setTransactions([...transactions, newTransaction]);
     setDate("");
     setItem("");
