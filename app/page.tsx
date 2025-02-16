@@ -10,7 +10,7 @@ export default function ExpenseTracker() {
   const [expense, setExpense] = useState("");
   
   useEffect(() => {
-    const savedTransactions = JSON.parse(localStorage.getItem("transactions")) || [];
+    const savedTransactions = JSON.parse(localStorage.getItem("transactions") || "[]");
     setTransactions(savedTransactions);
   }, []);
 
