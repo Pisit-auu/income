@@ -51,16 +51,40 @@ export default function ExpenseTracker() {
     if (typeof window !== 'undefined') {
       const input = document.getElementById('pdf-content');
       if (input) {
-        html2canvas(input).then((canvas) => {
+        html2canvas(input, { scale: 2 }).then((canvas) => {
           const imgData = canvas.toDataURL('image/png');
           const pdf = new jsPDF('p', 'mm', 'a4');
-          pdf.addImage(imgData, 'PNG', 10, 10, 190, 0);
+          
+          const pageWidth = pdf.internal.pageSize.width;
+          const pageHeight = pdf.internal.pageSize.height;
+  
+          // เพิ่ม margin
+          const margin = 10;
+          const imgWidth = pageWidth - margin * 2; // ลดขอบจากซ้ายขวา
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  
+          // หากความสูงเกินขนาดของหน้า A4
+          if (imgHeight > pageHeight - margin * 2) {
+            const scaleFactor = (pageHeight - margin * 2) / imgHeight;
+            pdf.addImage(imgData, 'PNG', margin, margin, imgWidth * scaleFactor, (pageHeight - margin * 2) * scaleFactor);
+          } else {
+            pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+          }
+  
+          // ตรวจสอบการตัดหน้า (ถ้าขนาดของภาพมากเกินไป สามารถเพิ่มหน้าใหม่ได้)
+          const currentPageHeight = pdf.internal.pageSize.height;
+          const totalPages = Math.ceil(imgHeight / currentPageHeight);
+          for (let i = 1; i < totalPages; i++) {
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', margin, -(currentPageHeight * i) + margin, imgWidth, imgHeight);
+          }
+  
+          // สร้าง PDF และบันทึก
           pdf.save('รายรับรายจ่าย.pdf');
         });
       }
     }
   };
-
   const totalExpense = transactions.reduce((sum, t) => sum + t.expense, 0);
 
   const profit = salesIncome - totalExpense;
