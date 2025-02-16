@@ -1,7 +1,7 @@
-'use client'
-import { useState, useEffect } from "react";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+'use client';
+import { useState, useEffect } from 'react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export default function ExpenseTracker() {
   type Transaction = {
@@ -9,63 +9,94 @@ export default function ExpenseTracker() {
     item: string;
     expense: number;
   };
-  
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [date, setDate] = useState("");
-  const [item, setItem] = useState("");
-  const [expense, setExpense] = useState("");
-  
+  const [date, setDate] = useState('');
+  const [item, setItem] = useState('');
+  const [expense, setExpense] = useState('');
+  const [salesIncome, setSalesIncome] = useState<number>(0); // ใช้ number แทน string
+
+  // โหลดข้อมูลจาก localStorage
   useEffect(() => {
-    const transactionsFromLocalStorage = localStorage.getItem("transactions");
-    const savedTransactions = transactionsFromLocalStorage ? JSON.parse(transactionsFromLocalStorage) : [];
+    const transactionsFromLocalStorage = localStorage.getItem('transactions');
+    const savedTransactions: Transaction[] = transactionsFromLocalStorage
+      ? JSON.parse(transactionsFromLocalStorage)
+      : [];
     setTransactions(savedTransactions);
   }, []);
-  
 
+  // บันทึกข้อมูลลง localStorage
   useEffect(() => {
-    localStorage.setItem("transactions", JSON.stringify(transactions));
+    localStorage.setItem('transactions', JSON.stringify(transactions));
   }, [transactions]);
 
+  // เพิ่มรายการ
   const addTransaction = () => {
+    const expenseValue = parseFloat(expense); // แปลงเป็นตัวเลข
     const newTransaction: Transaction = {
       date: date,
       item: item,
-      expense: parseFloat(expense) || 0,
+      expense: expenseValue || 0,
     };
-    
+
     setTransactions([...transactions, newTransaction]);
-    setDate("");
-    setItem("");
-    setExpense("");
+    setDate('');
+    setItem('');
+    setExpense('');
   };
 
-  const deleteTransaction = (index) => {
+  // ลบรายการ
+  const deleteTransaction = (index: number) => {
     const updatedTransactions = transactions.filter((_, i) => i !== index);
     setTransactions(updatedTransactions);
   };
 
+  // สร้าง PDF
   const generatePDF = () => {
-    const input = document.getElementById("pdf-content");
-    html2canvas(input).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      pdf.addImage(imgData, "PNG", 10, 10, 190, 0);
-      pdf.save("รายรับรายจ่าย.pdf");
-    });
+    if (typeof window !== 'undefined') {
+      const input = document.getElementById('pdf-content');
+      html2canvas(input).then((canvas) => {
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        pdf.addImage(imgData, 'PNG', 10, 10, 190, 0);
+        pdf.save('รายรับรายจ่าย.pdf');
+      });
+    }
   };
 
+  // คำนวณค่าใช้จ่ายทั้งหมด
   const totalExpense = transactions.reduce((sum, t) => sum + t.expense, 0);
-  const [salesIncome, setSalesIncome] = useState("");
-  const profit = parseFloat(salesIncome) - totalExpense;
+
+  // คำนวณกำไร
+  const profit = salesIncome - totalExpense;
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">บันทึกรายรับ-รายจ่าย</h1>
       <div className="grid grid-cols-4 gap-2 mb-4">
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="border p-2" />
-        <input type="text" placeholder="รายการ" value={item} onChange={(e) => setItem(e.target.value)} className="border p-2" />
-        <input type="number" placeholder="รายจ่าย" value={expense} onChange={(e) => setExpense(e.target.value)} className="border p-2" />
-        <button onClick={addTransaction} className="bg-blue-500 text-white px-4 py-2">เพิ่ม</button>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="border p-2"
+        />
+        <input
+          type="text"
+          placeholder="รายการ"
+          value={item}
+          onChange={(e) => setItem(e.target.value)}
+          className="border p-2"
+        />
+        <input
+          type="number"
+          placeholder="รายจ่าย"
+          value={expense}
+          onChange={(e) => setExpense(e.target.value)}
+          className="border p-2"
+        />
+        <button onClick={addTransaction} className="bg-blue-500 text-white px-4 py-2">
+          เพิ่ม
+        </button>
       </div>
 
       <div id="pdf-content">
@@ -85,7 +116,12 @@ export default function ExpenseTracker() {
                 <td className="border p-2">{t.item}</td>
                 <td className="border p-2">{t.expense}</td>
                 <td className="border p-2">
-                  <button onClick={() => deleteTransaction(index)} className="bg-red-500 text-white px-2 py-1">ลบ</button>
+                  <button
+                    onClick={() => deleteTransaction(index)}
+                    className="bg-red-500 text-white px-2 py-1"
+                  >
+                    ลบ
+                  </button>
                 </td>
               </tr>
             ))}
@@ -94,18 +130,20 @@ export default function ExpenseTracker() {
 
         <div className="mt-4 p-4 bg-gray-100 rounded">
           <p>ต้นทุนทั้งหมด: {totalExpense} บาท</p>
-          <input 
-            type="number" 
-            placeholder="รายได้จากการขายของ" 
-            value={salesIncome} 
-            onChange={(e) => setSalesIncome(e.target.value)} 
+          <input
+            type="number"
+            placeholder="รายได้จากการขายของ"
+            value={salesIncome}
+            onChange={(e) => setSalesIncome(parseFloat(e.target.value))}
             className="border p-2 w-full mb-2"
           />
           <p className="font-bold">กำไรคงเหลือ: {profit} บาท</p>
         </div>
       </div>
 
-      <button onClick={generatePDF} className="bg-green-500 text-white px-4 py-2 mt-4">บันทึกเป็น PDF</button>
+      <button onClick={generatePDF} className="bg-green-500 text-white px-4 py-2 mt-4">
+        บันทึกเป็น PDF
+      </button>
     </div>
   );
 }
