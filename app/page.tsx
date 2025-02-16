@@ -10,9 +10,11 @@ export default function ExpenseTracker() {
   const [expense, setExpense] = useState("");
   
   useEffect(() => {
-    const savedTransactions = JSON.parse(localStorage.getItem("transactions") || "[]");
+    const transactionsFromLocalStorage = localStorage.getItem("transactions");
+    const savedTransactions = transactionsFromLocalStorage ? JSON.parse(transactionsFromLocalStorage) : [];
     setTransactions(savedTransactions);
   }, []);
+  
 
   useEffect(() => {
     localStorage.setItem("transactions", JSON.stringify(transactions));
