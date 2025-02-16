@@ -14,9 +14,8 @@ export default function ExpenseTracker() {
   const [date, setDate] = useState('');
   const [item, setItem] = useState('');
   const [expense, setExpense] = useState('');
-  const [salesIncome, setSalesIncome] = useState<number>(0); // ใช้ number แทน string
+  const [salesIncome, setSalesIncome] = useState<number>(0);
 
-  // โหลดข้อมูลจาก localStorage
   useEffect(() => {
     const transactionsFromLocalStorage = localStorage.getItem('transactions');
     const savedTransactions: Transaction[] = transactionsFromLocalStorage
@@ -25,14 +24,12 @@ export default function ExpenseTracker() {
     setTransactions(savedTransactions);
   }, []);
 
-  // บันทึกข้อมูลลง localStorage
   useEffect(() => {
     localStorage.setItem('transactions', JSON.stringify(transactions));
   }, [transactions]);
 
-  // เพิ่มรายการ
   const addTransaction = () => {
-    const expenseValue = parseFloat(expense); // แปลงเป็นตัวเลข
+    const expenseValue = parseFloat(expense);
     const newTransaction: Transaction = {
       date: date,
       item: item,
@@ -45,17 +42,15 @@ export default function ExpenseTracker() {
     setExpense('');
   };
 
-  // ลบรายการ
   const deleteTransaction = (index: number) => {
     const updatedTransactions = transactions.filter((_, i) => i !== index);
     setTransactions(updatedTransactions);
   };
 
-  // สร้าง PDF
   const generatePDF = () => {
     if (typeof window !== 'undefined') {
       const input = document.getElementById('pdf-content');
-      if (input) {  // ตรวจสอบว่า input ไม่เป็น null
+      if (input) {
         html2canvas(input).then((canvas) => {
           const imgData = canvas.toDataURL('image/png');
           const pdf = new jsPDF('p', 'mm', 'a4');
@@ -66,37 +61,35 @@ export default function ExpenseTracker() {
     }
   };
 
-  // คำนวณค่าใช้จ่ายทั้งหมด
   const totalExpense = transactions.reduce((sum, t) => sum + t.expense, 0);
 
-  // คำนวณกำไร
   const profit = salesIncome - totalExpense;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">บันทึกรายรับ-รายจ่าย</h1>
-      <div className="grid grid-cols-4 gap-2 mb-4">
+    <div className="p-6 max-w-full mx-auto">
+      <h1 className="text-2xl font-bold mb-4 text-center sm:text-left">บันทึกรายรับ-รายจ่าย</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="border p-2"
+          className="border p-2 w-full"
         />
         <input
           type="text"
           placeholder="รายการ"
           value={item}
           onChange={(e) => setItem(e.target.value)}
-          className="border p-2"
+          className="border p-2 w-full"
         />
         <input
           type="number"
           placeholder="รายจ่าย"
           value={expense}
           onChange={(e) => setExpense(e.target.value)}
-          className="border p-2"
+          className="border p-2 w-full"
         />
-        <button onClick={addTransaction} className="bg-blue-500 text-white px-4 py-2">
+        <button onClick={addTransaction} className="bg-blue-500 text-white px-4 py-2 w-full sm:w-auto">
           เพิ่ม
         </button>
       </div>
@@ -143,7 +136,7 @@ export default function ExpenseTracker() {
         </div>
       </div>
 
-      <button onClick={generatePDF} className="bg-green-500 text-white px-4 py-2 mt-4">
+      <button onClick={generatePDF} className="bg-green-500 text-white px-4 py-2 mt-4 w-full sm:w-auto">
         บันทึกเป็น PDF
       </button>
     </div>
